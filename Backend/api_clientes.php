@@ -150,7 +150,7 @@ try {
         }
 
         if ($method === 'POST') {
-            if (existeClienteConCedula($pdo, $cedula)) {
+            if (existeClienteConCedula($pdo_posventa, $cedula)) {
                 http_response_code(409);
                 echo json_encode([
                     'estado' => 'error',
@@ -159,14 +159,14 @@ try {
                 exit;
             }
 
-            $stmt = $pdo->prepare('INSERT INTO clientes (cedula, nombre_completo, correo) VALUES (?, ?, ?)');
+            $stmt = $pdo_posventa->prepare('INSERT INTO clientes (cedula, nombre_completo, correo) VALUES (?, ?, ?)');
             $stmt->execute([$cedula, $nombreCompleto, $correo]);
 
             echo json_encode([
                 'estado' => 'exito',
                 'mensaje' => 'Cliente registrado correctamente',
                 'cliente' => [
-                    'id' => (int) $pdo->lastInsertId(),
+                    'id' => (int) $pdo_posventa->lastInsertId(),
                     'cedula' => $cedula,
                     'nombre_completo' => $nombreCompleto,
                     'correo' => $correo,
@@ -186,7 +186,7 @@ try {
             exit;
         }
 
-        if (existeClienteConCedula($pdo, $cedula, $id)) {
+        if (existeClienteConCedula($pdo_posventa, $cedula, $id)) {
             http_response_code(409);
             echo json_encode([
                 'estado' => 'error',
@@ -195,7 +195,7 @@ try {
             exit;
         }
 
-        $stmt = $pdo->prepare('UPDATE clientes SET cedula = ?, nombre_completo = ?, correo = ? WHERE id = ?');
+        $stmt = $pdo_posventa->prepare('UPDATE clientes SET cedula = ?, nombre_completo = ?, correo = ? WHERE id = ?');
         $stmt->execute([$cedula, $nombreCompleto, $correo, $id]);
 
         echo json_encode([
@@ -238,7 +238,7 @@ try {
             exit;
         }
 
-        $stmt = $pdo->prepare('DELETE FROM clientes WHERE id = ?');
+        $stmt = $pdo_posventa->prepare('DELETE FROM clientes WHERE id = ?');
         $stmt->execute([$id]);
 
         echo json_encode([
@@ -272,7 +272,7 @@ try {
 
         // Consumidor Final agrupa muchas ventas anónimas del POS y no representa
         // a un cliente real, así que se excluye del ranking de frecuencia.
-        $stmtFrecuentes = $pdo->prepare(
+        $stmtFrecuentes = $pdo_posventa->prepare(
             "SELECT c.id, c.cedula, c.nombre_completo, c.correo,
                     COUNT(v.id) AS total_compras,
                     COALESCE(SUM(v.total_factura), 0) AS total_gastado,
@@ -302,7 +302,7 @@ try {
     $search = trim((string) ($_GET['q'] ?? ''));
 
     if ($search === '') {
-        $stmt = $pdo->query(
+        $stmt = $pdo_posventa->query(
             'SELECT c.id, c.cedula, c.nombre_completo, c.correo, c.fecha_registro,
                     COALESCE(v.total_compras, 0) AS total_compras,
                     COALESCE(v.total_gastado, 0) AS total_gastado
@@ -315,7 +315,7 @@ try {
              ORDER BY c.id ASC'
         );
     } else {
-        $stmt = $pdo->prepare(
+        $stmt = $pdo_posventa->prepare(
             'SELECT c.id, c.cedula, c.nombre_completo, c.correo, c.fecha_registro,
                     COALESCE(v.total_compras, 0) AS total_compras,
                     COALESCE(v.total_gastado, 0) AS total_gastado
