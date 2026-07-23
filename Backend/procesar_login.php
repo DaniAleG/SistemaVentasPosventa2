@@ -32,7 +32,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!$loginValido && hash_equals($hashAlmacenado, $passwordInput)) {
                 $nuevoHash = password_hash($passwordInput, PASSWORD_DEFAULT);
-                $actualizar = $pdo->prepare('UPDATE usuarios SET password_hash = ? WHERE id = ?');
+                $actualizar = $pdo_posventa->prepare('UPDATE usuarios SET password_hash = ? WHERE id = ?');
                 $actualizar->execute([$nuevoHash, $usuarioDB['id']]);
                 $loginValido = true;
             }
