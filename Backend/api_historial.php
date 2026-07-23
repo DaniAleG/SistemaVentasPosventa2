@@ -27,10 +27,10 @@ function normalizarFecha(?string $fecha): ?string
     return fechaValida($fecha) ? $fecha : null;
 }
 
-function ejecutarConsultaHistorial(PDO $pdo, string $sql, array $parametros): ?array
+function ejecutarConsultaHistorial(PDO $pdo_posventa, string $sql, array $parametros): ?array
 {
     try {
-        $stmt = $pdo->prepare($sql);
+        $stmt = $pdo_posventa->prepare($sql);
         $stmt->execute($parametros);
         $filas = $stmt->fetchAll();
         return is_array($filas) ? $filas : [];
@@ -39,9 +39,9 @@ function ejecutarConsultaHistorial(PDO $pdo, string $sql, array $parametros): ?a
     }
 }
 
-function obtenerColumnasTabla(PDO $pdo, string $tabla): array
+function obtenerColumnasTabla(PDO $pdo_posventa, string $tabla): array
 {
-    $stmt = $pdo->prepare('SHOW COLUMNS FROM `' . $tabla . '`');
+    $stmt = $pdo_posventa->prepare('SHOW COLUMNS FROM `' . $tabla . '`');
     $stmt->execute();
     $columnas = [];
 
