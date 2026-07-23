@@ -1,0 +1,18 @@
+.card-totalizador {
+    border: 0;
+    border-left: 5px solid var(--verde-medio);
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+}
+
+.card-totalizador .titulo {
+    font-size: .9rem;
+    color: #6c757d;
+    margin-bottom: .25rem;
+}
+
+.card-totalizador .valor {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--verde-oscuro);
+    margin: 0;
+}

@@ -1,0 +1,182 @@
+/*Estilo general */
+:root {
+    --verde-oscuro: #1b4332;
+    --verde-medio: #2d6a4f;
+    --verde-claro: #40916c;
+    --fondo-gris: #f8f9fa;
+}
+
+
+body{
+    background-color: var(--fondo-gris);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+/*Diseño del menú*/
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background-color: var(--verde-oscuro);
+    color: #fff;
+    transition: transform 0.3s ease;
+    height: 100vh;
+    width: 280px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    transform: translateX(0);
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: rgba(0,0,0,0.1);
+    border-bottom: 1px solid var(--verde-medio);
+}
+#sidebar ul.components {
+    padding: 20px 0;
+}
+#sidebar ul p{
+    color: #fff;
+    padding: 10px;
+}
+#sidebar ul li a{
+    padding: 15px 20px;
+    font-size: 1.1em;
+    display: block;
+    color: #d8f3dc;
+    text-decoration: none;
+    transition: 0.2s;
+}
+#sidebar ul li a:hover{
+    color: #fff;
+    background: var(--verde-medio);
+    border-left: 4px solid var(--verde-claro);
+}
+
+/*Diseño del contenido principal*/
+#content {
+    width: 100%;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+    margin-left: 280px;
+}
+/* Boton cerrar sesión*/
+.btn-logout {
+    background-color: #d90429;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-logout:hover {
+    background-color: #9d0208;
+    color: white;
+}
+/*efectos hover para los enlaces del menu lateral*/
+.menu-item{
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+.menu-item:hover{
+    background-color: var(--verde-medio);
+    color: #ffffff;
+    transform: translateX(5px);
+}
+
+#sidebar-toggle,
+.sidebar-toggle-btn {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1055;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    font-size: 1.25rem;
+    line-height: 1;
+    border: none;
+    background-color: var(--verde-medio);
+    color: #fff;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+#sidebar-toggle:hover,
+.sidebar-toggle-btn:hover {
+    background-color: var(--verde-oscuro);
+}
+
+#sidebar-hover-zone {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 100vh;
+    z-index: 1032;
+    background: transparent;
+}
+
+#sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1035;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+body.sidebar-hidden #sidebar {
+    transform: translateX(-100%);
+}
+
+body.sidebar-hidden #content {
+    margin-left: 0;
+}
+
+body.sidebar-hidden #sidebar-backdrop {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (max-width: 991.98px) {
+    #sidebar-toggle,
+    .sidebar-toggle-btn {
+        display: inline-flex;
+    }
+
+    #sidebar-hover-zone {
+        display: none;
+    }
+
+    #sidebar {
+        transform: translateX(-100%);
+    }
+
+    body.sidebar-visible #sidebar {
+        transform: translateX(0);
+    }
+
+    body.sidebar-visible #sidebar-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    #content {
+        margin-left: 0;
+        padding-top: 62px;
+    }
+
+    body.sidebar-visible {
+        overflow: hidden;
+    }
+}
