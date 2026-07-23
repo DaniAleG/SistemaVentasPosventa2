@@ -59,11 +59,11 @@ foreach ($items as $item) {
 }
 
 try {
-    $pdo->beginTransaction();
+    $pdo_posventa->beginTransaction();
 
     // 1) Resolver el cliente. Si no viene un id valido, buscamos o creamos "Consumidor Final".
     if ($clienteId > 0) {
-        $stmtCliente = $pdo->prepare('SELECT id FROM clientes WHERE id = ?');
+        $stmtCliente = $pdo_posventa->prepare('SELECT id FROM clientes WHERE id = ?');
         $stmtCliente->execute([$clienteId]);
         if (!$stmtCliente->fetch()) {
             $clienteId = 0; // el id que mando el frontend ya no existe, caemos al flujo de consumidor final
@@ -71,7 +71,7 @@ try {
     }
 
     if ($clienteId <= 0) {
-        $stmtBuscar = $pdo->prepare('SELECT id FROM clientes WHERE cedula = ? LIMIT 1');
+        $stmtBuscar = $pdo_posventa->prepare('SELECT id FROM clientes WHERE cedula = ? LIMIT 1');
         $stmtBuscar->execute([$clienteCedula]);
         $clienteExistente = $stmtBuscar->fetch();
 
@@ -79,9 +79,9 @@ try {
             $clienteId = (int) $clienteExistente['id'];
         } else {
             $correoGenerico = $clienteCorreo !== '' ? $clienteCorreo : 'consumidor.final@posventa.local';
-            $stmtCrear = $pdo->prepare('INSERT INTO clientes (cedula, nombre_completo, correo) VALUES (?, ?, ?)');
+            $stmtCrear = $pdo_posventa->prepare('INSERT INTO clientes (cedula, nombre_completo, correo) VALUES (?, ?, ?)');
             $stmtCrear->execute([$clienteCedula, $clienteNombre !== '' ? $clienteNombre : 'Consumidor Final', $correoGenerico]);
-            $clienteId = (int) $pdo->lastInsertId();
+            $clienteId = (int) $pdo_posventa->lastInsertId();
         }
     }
 
@@ -90,13 +90,13 @@ try {
     // Reglas: desde $2000 acumulados => 10%, desde $5000 acumulados => 15%.
     // El Consumidor Final (cédula genérica) nunca accede al descuento.
     $descuentoPorcentaje = 0.0;
-    $stmtCedulaCliente = $pdo->prepare('SELECT cedula FROM clientes WHERE id = ?');
+    $stmtCedulaCliente = $pdo_posventa->prepare('SELECT cedula FROM clientes WHERE id = ?');
     $stmtCedulaCliente->execute([$clienteId]);
     $filaCliente = $stmtCedulaCliente->fetch();
     $cedulaClienteActual = (string) ($filaCliente['cedula'] ?? '');
 
     if ($cedulaClienteActual !== '9999999999999') {
-        $stmtGastoCliente = $pdo->prepare('SELECT COALESCE(SUM(total_factura), 0) AS total_gastado FROM ventas WHERE cliente_id = ?');
+        $stmtGastoCliente = $pdo_posventa->prepare('SELECT COALESCE(SUM(total_factura), 0) AS total_gastado FROM ventas WHERE cliente_id = ?');
         $stmtGastoCliente->execute([$clienteId]);
         $filaGasto = $stmtGastoCliente->fetch();
         $totalGastadoPrevio = (float) ($filaGasto['total_gastado'] ?? 0);
@@ -109,7 +109,7 @@ try {
     }
 
     // 3) Validar stock y calcular el total en el servidor (no confiamos en el total que manda el navegador)
-    $stmtProducto = $pdo->prepare('SELECT id, precio_actual, stock_disponible FROM productos WHERE id = ? FOR UPDATE');
+    $stmtProducto = $pdo_posventa->prepare('SELECT id, precio_actual, stock_disponible FROM productos WHERE id = ? FOR UPDATE');
     $totalCalculado = 0.0;
     $detalleFinal = [];
 
@@ -144,13 +144,13 @@ try {
     // 4) Insertar la cabecera de la venta (incluye el cajero que la registro)
     $usuarioId = (int) ($_SESSION['usuario_activo']['id'] ?? 0);
 
-    $stmtVenta = $pdo->prepare('INSERT INTO ventas (cliente_id, usuario_id, total_factura, fecha_emision) VALUES (?, ?, ?, NOW())');
+    $stmtVenta = $pdo_posventa->prepare('INSERT INTO ventas (cliente_id, usuario_id, total_factura, fecha_emision) VALUES (?, ?, ?, NOW())');
     $stmtVenta->execute([$clienteId, $usuarioId > 0 ? $usuarioId : null, $totalFactura]);
-    $ventaId = (int) $pdo->lastInsertId();
+    $ventaId = (int) $pdo_posventa->lastInsertId();
 
     // 5) Insertar el detalle y descontar stock
-    $stmtDetalle = $pdo->prepare('INSERT INTO detalles_venta (venta_id, producto_id, cantidad, precio_congelado) VALUES (?, ?, ?, ?)');
-    $stmtStock = $pdo->prepare('UPDATE productos SET stock_disponible = stock_disponible - ? WHERE id = ? AND stock_disponible >= ?');
+    $stmtDetalle = $pdo_posventa->prepare('INSERT INTO detalles_venta (venta_id, producto_id, cantidad, precio_congelado) VALUES (?, ?, ?, ?)');
+    $stmtStock = $pdo_posventa->prepare('UPDATE productos SET stock_disponible = stock_disponible - ? WHERE id = ? AND stock_disponible >= ?');
 
     foreach ($detalleFinal as $detalle) {
         $stmtDetalle->execute([$ventaId, $detalle['producto_id'], $detalle['cantidad'], $detalle['precio_congelado']]);
@@ -161,7 +161,7 @@ try {
         }
     }
 
-    $pdo->commit();
+    $pdo_posventa->commit();
 
     echo json_encode([
         'estado' => 'exito',
@@ -177,8 +177,8 @@ try {
         ],
     ], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $throwable) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
+    if ($pdo_posventa->inTransaction()) {
+        $pdo_posventa->rollBack();
     }
 
     http_response_code(422);
