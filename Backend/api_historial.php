@@ -66,10 +66,10 @@ function primeraColumnaDisponible(array $columnas, array $opciones): ?string
     return null;
 }
 
-function tablaExiste(PDO $pdo, string $tabla): bool
+function tablaExiste(PDO $pdo_posventa, string $tabla): bool
 {
     try {
-        $pdo->query('SELECT 1 FROM `' . $tabla . '` LIMIT 1');
+        $pdo_posventa->query('SELECT 1 FROM `' . $tabla . '` LIMIT 1');
         return true;
     } catch (Throwable $throwable) {
         return false;
@@ -94,7 +94,7 @@ try {
 
     $tablaCabecera = null;
     foreach (['facturas', 'ventas'] as $candidata) {
-        if (tablaExiste($pdo, $candidata)) {
+        if (tablaExiste($pdo_posventa, $candidata)) {
             $tablaCabecera = $candidata;
             break;
         }
@@ -114,7 +114,7 @@ try {
         exit;
     }
 
-    $colCabecera = obtenerColumnasTabla($pdo, $tablaCabecera);
+    $colCabecera = obtenerColumnasTabla($pdo_posventa, $tablaCabecera);
     $idCol = primeraColumnaDisponible($colCabecera, ['id', 'id_factura', 'id_venta']) ?? 'id';
     $fechaCol = primeraColumnaDisponible($colCabecera, ['fecha_emision', 'fecha_venta', 'fecha', 'created_at']) ?? 'fecha';
     $totalCol = primeraColumnaDisponible($colCabecera, ['total_factura', 'total', 'total_venta', 'monto_total', 'valor_total']) ?? 'total_factura';
@@ -129,8 +129,8 @@ try {
     $filtroClienteSql = '';
     $filtroClienteParams = [];
 
-    if ($clienteFkCol !== null && tablaExiste($pdo, 'clientes')) {
-        $colCliente = obtenerColumnasTabla($pdo, 'clientes');
+    if ($clienteFkCol !== null && tablaExiste($pdo_posventa, 'clientes')) {
+        $colCliente = obtenerColumnasTabla($pdo_posventa, 'clientes');
         $clienteIdCol = primeraColumnaDisponible($colCliente, ['id', 'id_cliente']);
         $clienteNombreCol = primeraColumnaDisponible($colCliente, ['nombre_completo', 'nombre', 'nombres']);
         $clienteCedulaCol = primeraColumnaDisponible($colCliente, ['cedula', 'documento', 'identificacion', 'dni', 'ruc']);
@@ -159,14 +159,14 @@ try {
     if ($usuarioFkCol !== null) {
         $tablaUsuario = null;
         foreach (['usuarios', 'usuario', 'users'] as $candUsuario) {
-            if (tablaExiste($pdo, $candUsuario)) {
+            if (tablaExiste($pdo_posventa, $candUsuario)) {
                 $tablaUsuario = $candUsuario;
                 break;
             }
         }
 
         if ($tablaUsuario !== null) {
-            $colUsuario = obtenerColumnasTabla($pdo, $tablaUsuario);
+            $colUsuario = obtenerColumnasTabla($pdo_posventa, $tablaUsuario);
             $usuarioIdCol = primeraColumnaDisponible($colUsuario, ['id', 'id_usuario', 'user_id']);
             $usuarioNombreCol = primeraColumnaDisponible($colUsuario, ['usuario', 'nombre', 'nombre_completo', 'username']);
 
@@ -217,7 +217,7 @@ try {
             $whereSql
             ORDER BY v.`$fechaCol` DESC";
 
-    $registros = ejecutarConsultaHistorial($pdo, $sql, $parametros);
+    $registros = ejecutarConsultaHistorial($pdo_posventa, $sql, $parametros);
     if ($registros === null) {
         throw new RuntimeException('Consulta de historial no disponible');
     }
