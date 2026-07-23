@@ -19,7 +19,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try{
         //Consultamos el usuario de forma segura a la base de datos utilizando consultas de tipo statement
-        $stmt = $pdo->prepare("SELECT id, usuario, password_hash, rol FROM usuarios WHERE usuario = ? AND estado=1");
+        $stmt = $pdo_posventa->prepare("SELECT id, usuario, password_hash, rol FROM usuarios WHERE usuario = ? AND estado=1");
         // Ejecutar la consulta pasando el parámetro del usuario
         $stmt->execute([$usuarioInput]);
         
