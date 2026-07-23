@@ -147,7 +147,7 @@ try {
         case "DELETE":
             $id = $_GET["id"] ?? 0;
             $sql = "DELETE FROM productos WHERE id = ?";
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo_posventa->prepare($sql);
             $stmt->execute([$id]);
             echo json_encode([
                 "estado" => "exito",
