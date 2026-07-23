@@ -62,5 +62,5 @@ class MySQLSessionHandler implements SessionHandlerInterface
     }
 }
 
-session_set_save_handler(new MySQLSessionHandler($pdo), true);
+session_set_save_handler(new MySQLSessionHandler($pdo_sesiones), true);
 session_start();
