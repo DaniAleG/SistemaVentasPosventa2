@@ -49,13 +49,13 @@ function validarProducto(array $input): array
     return [true, ""];
 }
 
-function existeProductoConCodigo(PDO $pdo, string $codigo, ?int $idExcluir = null): bool
+function existeProductoConCodigo(PDO $pdo_posventa, string $codigo, ?int $idExcluir = null): bool
 {
     if ($idExcluir !== null) {
-        $stmt = $pdo->prepare("SELECT id FROM productos WHERE codigo_barras = ? AND id <> ? LIMIT 1");
+        $stmt = $pdo_posventa->prepare("SELECT id FROM productos WHERE codigo_barras = ? AND id <> ? LIMIT 1");
         $stmt->execute([$codigo, $idExcluir]);
     } else {
-        $stmt = $pdo->prepare("SELECT id FROM productos WHERE codigo_barras = ? LIMIT 1");
+        $stmt = $pdo_posventa->prepare("SELECT id FROM productos WHERE codigo_barras = ? LIMIT 1");
         $stmt->execute([$codigo]);
     }
 
@@ -68,7 +68,7 @@ try {
             $search = $_GET["q"] ?? "";
             $sql =
                 "SELECT * FROM productos WHERE nombre_producto LIKE ? OR codigo_barras LIKE ?";
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo_posventa->prepare($sql);
             $stmt->execute(["%$search%", "%$search%"]);
             echo json_encode($stmt->fetchAll());
             break;
@@ -84,7 +84,7 @@ try {
                 break;
             }
 
-            if (existeProductoConCodigo($pdo, trim((string)$input["codigo"]))) {
+            if (existeProductoConCodigo($pdo_posventa, trim((string)$input["codigo"]))) {
                 http_response_code(409);
                 echo json_encode([
                     "estado" => "error",
@@ -95,7 +95,7 @@ try {
 
             $sql =
                 "INSERT INTO productos (codigo_barras, nombre_producto, precio_actual, stock_disponible) VALUES (?, ?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo_posventa->prepare($sql);
             $stmt->execute([
                 trim((string)$input["codigo"]),
                 trim((string)$input["nombre"]),
@@ -119,7 +119,7 @@ try {
                 break;
             }
 
-            if (existeProductoConCodigo($pdo, trim((string)$input["codigo"]), (int)$input["id"])) {
+            if (existeProductoConCodigo($pdo_posventa, trim((string)$input["codigo"]), (int)$input["id"])) {
                 http_response_code(409);
                 echo json_encode([
                     "estado" => "error",
@@ -130,7 +130,7 @@ try {
 
             $sql =
                 "UPDATE productos SET codigo_barras = ?, nombre_producto = ?, precio_actual = ?, stock_disponible = ? WHERE id = ?";
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo_posventa->prepare($sql);
             $stmt->execute([
                 trim((string)$input["codigo"]),
                 trim((string)$input["nombre"]),
