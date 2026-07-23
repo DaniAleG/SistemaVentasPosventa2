@@ -42,13 +42,13 @@ function validarCorreo(string $correo): bool
     return filter_var($correo, FILTER_VALIDATE_EMAIL) !== false;
 }
 
-function existeClienteConCedula(PDO $pdo, string $cedula, ?int $idExcluir = null): bool
+function existeClienteConCedula(PDO $pdo_posventa, string $cedula, ?int $idExcluir = null): bool
 {
     if ($idExcluir !== null) {
-        $stmt = $pdo->prepare('SELECT id FROM clientes WHERE cedula = ? AND id <> ? LIMIT 1');
+        $stmt = $pdo_posventa->prepare('SELECT id FROM clientes WHERE cedula = ? AND id <> ? LIMIT 1');
         $stmt->execute([$cedula, $idExcluir]);
     } else {
-        $stmt = $pdo->prepare('SELECT id FROM clientes WHERE cedula = ? LIMIT 1');
+        $stmt = $pdo_posventa->prepare('SELECT id FROM clientes WHERE cedula = ? LIMIT 1');
         $stmt->execute([$cedula]);
     }
 
